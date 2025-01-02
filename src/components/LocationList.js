@@ -77,6 +77,18 @@ const ReviewCount = styled.p`
   margin: 0;
 `;
 
+const LocationInfo = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: ${props => props.theme.spacing.xs};
+`;
+
+const Distance = styled.span`
+  font-size: 13px;
+  color: ${props => props.theme.colors.text.secondary};
+`;
+
 const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
   const getAverageRating = (location) => {
     if (!location.reviews || location.reviews.length === 0) {
@@ -85,9 +97,17 @@ const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
     return location.reviews.reduce((sum, review) => sum + review.rating, 0) / location.reviews.length;
   };
 
+  const formatDistance = (distance) => {
+    if (distance < 0.1) {
+      const feet = Math.round(distance * 5280);
+      return `${feet}ft`;
+    }
+    return `${distance.toFixed(1)}mi`;
+  };
+
   return (
     <ListContainer>
-      <ListHeader>Nearby Locations</ListHeader>
+      <ListHeader>Local Loo-cations</ListHeader>
       <ScrollContainer>
         {locations.map((location) => (
           <LocationCard
@@ -95,10 +115,15 @@ const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
             onClick={() => onLocationSelect(location)}
             selected={selectedLocation?.id === location.id}
           >
-            <LocationName>{location.name}</LocationName>
+            <LocationInfo>
+              <LocationName>{location.name}</LocationName>
+              <Distance>{formatDistance(location.distance)}</Distance>
+            </LocationInfo>
             <RatingDisplay rating={getAverageRating(location)} size="18px" />
             {location.reviews && location.reviews.length > 0 && (
-              <ReviewCount>{location.reviews.length} reviews</ReviewCount>
+              <ReviewCount>
+                {location.reviews.length} {location.reviews.length === 1 ? 'log' : 'logs'}
+              </ReviewCount>
             )}
           </LocationCard>
         ))}

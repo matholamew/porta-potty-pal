@@ -1,5 +1,5 @@
-import React from 'react';
-import { GoogleMap, Marker } from '@react-google-maps/api';
+import React, { useCallback, useEffect, useState } from 'react';
+import { GoogleMap } from '@react-google-maps/api';
 import styled from 'styled-components';
 
 const MapContainer = styled.div`
@@ -7,61 +7,114 @@ const MapContainer = styled.div`
   height: 400px;
 `;
 
-const LoadingContainer = styled.div`
-  width: 100%;
-  height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${props => props.theme.colors.background};
-  color: ${props => props.theme.colors.text.secondary};
-`;
+const libraries = ['marker'];
 
 const Map = ({ locations, userLocation, onMarkerClick, selectedLocation }) => {
-  const mapOptions = {
-    disableDefaultUI: true,
-    zoomControl: true,
-    streetViewControl: false,
-    mapTypeControl: false,
+  const [map, setMap] = useState(null);
+  const [markers, setMarkers] = useState([]);
+
+  const createMarkerContent = (isSelected) => {
+    const pin = document.createElement('div');
+    pin.className = 'custom-marker';
+    pin.style.backgroundColor = isSelected ? '#2196F3' : '#4CAF50';
+    pin.style.borderRadius = '50%';
+    pin.style.padding = '8px';
+    pin.style.border = '2px solid white';
+    pin.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+    return pin;
   };
 
-  const center = userLocation || { lat: 40.7128, lng: -74.0060 };
+  const createUserMarkerContent = () => {
+    const pin = document.createElement('div');
+    pin.className = 'user-marker';
+    pin.style.backgroundColor = '#1976D2';
+    pin.style.borderRadius = '50%';
+    pin.style.padding = '6px';
+    pin.style.border = '2px solid white';
+    pin.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+    return pin;
+  };
+
+  // Clean up existing markers
+  const clearMarkers = () => {
+    markers.forEach(marker => marker.map = null);
+    setMarkers([]);
+  };
+
+  // Create and add markers when map or locations change
+  useEffect(() => {
+    if (!map || !window.google?.maps?.marker?.AdvancedMarkerElement) return;
+
+    clearMarkers();
+    const newMarkers = [];
+
+    // Add location markers
+    locations.forEach((loc) => {
+      const marker = createMarker(loc);
+      newMarkers.push(marker);
+    });
+
+    // Add user location marker
+    if (userLocation) {
+      const userMarker = createUserMarker();
+      newMarkers.push(userMarker);
+    }
+
+    setMarkers(newMarkers);
+
+    return () => clearMarkers();
+  }, [map, locations, selectedLocation, userLocation]);
+
+  const createMarker = (location) => {
+    if (!map || !window.google?.maps?.marker?.AdvancedMarkerElement) return;
+
+    const marker = new window.google.maps.marker.AdvancedMarkerElement({
+      position: { 
+        lat: Number(location.lat), 
+        lng: Number(location.lng)
+      },
+      map: map,
+      title: location.name,
+      content: createMarkerContent(selectedLocation?.id === location.id)
+    });
+
+    marker.addListener('click', () => onMarkerClick(location));
+    return marker;
+  };
+
+  const createUserMarker = () => {
+    if (!map || !userLocation || !window.google?.maps?.marker?.AdvancedMarkerElement) return;
+
+    return new window.google.maps.marker.AdvancedMarkerElement({
+      position: {
+        lat: Number(userLocation.lat),
+        lng: Number(userLocation.lng)
+      },
+      map: map,
+      title: 'Your Location',
+      content: createUserMarkerContent()
+    });
+  };
+
+  const onLoad = useCallback((map) => {
+    setMap(map);
+  }, []);
 
   return (
     <MapContainer>
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '100%' }}
         zoom={13}
-        center={center}
-        options={mapOptions}
-      >
-        {userLocation && (
-          <Marker
-            position={userLocation}
-            icon={{
-              path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z",
-              fillColor: "#4285F4",
-              fillOpacity: 1,
-              strokeColor: "#000000",
-              strokeWeight: 1,
-              scale: 2,
-              anchor: new window.google.maps.Point(12, 22),
-            }}
-          />
-        )}
-        
-        {locations.map((location) => (
-          <Marker
-            key={location.id}
-            position={{ 
-              lat: location.latitude, 
-              lng: location.longitude 
-            }}
-            onClick={() => onMarkerClick(location)}
-            animation={selectedLocation?.id === location.id ? window.google.maps.Animation.BOUNCE : null}
-          />
-        ))}
-      </GoogleMap>
+        center={userLocation || { lat: 40.7128, lng: -74.0060 }}
+        options={{
+          streetViewControl: false,
+          mapTypeControl: false,
+          fullscreenControl: false,
+          mapId: process.env.REACT_APP_GOOGLE_MAPS_ID
+        }}
+        onLoad={onLoad}
+        libraries={libraries}
+      />
     </MapContainer>
   );
 };

@@ -9,6 +9,7 @@ import { getNearbyToilets } from '../utils/database';
 import Menu from '../components/Menu';
 import { ThemeProvider } from 'styled-components';
 import { lightTheme, darkTheme } from '../theme';
+import Modal from '../components/Modal';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -30,14 +31,23 @@ const Title = styled.h1`
 `;
 
 const Grid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 350px;
+  display: flex;
+  flex-direction: column;
   gap: ${props => props.theme.spacing.xl};
   margin-top: ${props => props.theme.spacing.xl};
+`;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+const LocationSection = styled.div`
+  background: ${props => props.theme.colors.surface};
+  border-radius: ${props => props.theme.borderRadius.lg};
+  box-shadow: ${props => props.theme.shadows.small};
+  overflow: hidden;
+`;
+
+const DetailsSection = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
 `;
 
 const ErrorMessage = styled.div`
@@ -82,6 +92,42 @@ const MapContainer = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
+const AddButton = styled.button`
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 28px;
+  background: ${props => props.theme.colors.primary};
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+  z-index: 100;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  // Ensure minimum touch target size (44x44 points)
+  @media (max-width: 768px) {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    font-size: 20px;
+  }
+`;
+
 const HomeScreen = ({ isLoaded }) => {
   const [userLocation, setUserLocation] = useState(null);
   const [nearbyToilets, setNearbyToilets] = useState([]);
@@ -89,68 +135,37 @@ const HomeScreen = ({ isLoaded }) => {
   const [locationError, setLocationError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isAddLocationModalOpen, setIsAddLocationModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   useEffect(() => {
-    let mounted = true;
-
-    const initializeLocation = async () => {
-      setIsLoading(true);
+    const fetchLocation = async () => {
       try {
-        // Try to get location from localStorage first
-        const savedLocation = localStorage.getItem('userLocation');
-        if (savedLocation) {
-          const parsed = JSON.parse(savedLocation);
-          console.log('Loaded from storage:', parsed);
-          setUserLocation(parsed);
-        }
-
-        // Get fresh location
-        const location = await getCurrentLocation();
-        console.log('Fresh location:', location);
+        setLocationError(null);
+        const position = await getCurrentLocation();
+        console.log('Setting user location:', position);
         
-        const userLoc = {
-          lat: Number(location.latitude),
-          lng: Number(location.longitude)
-        };
-        console.log('Formatted location:', userLoc);
-
-        if (mounted) {
-          setUserLocation(userLoc);
-          localStorage.setItem('userLocation', JSON.stringify(userLoc));
-          
-          const toilets = await getNearbyToilets(
-            userLoc.lat,
-            userLoc.lng
-          );
-          setNearbyToilets(toilets);
-          setLocationError(null);
-        }
+        // Format the location properly for Google Maps
+        setUserLocation({
+          lat: Number(position.latitude),
+          lng: Number(position.longitude)
+        });
+        
+        // Use the same format for getNearbyToilets
+        const toilets = await getNearbyToilets(position.latitude, position.longitude);
+        setNearbyToilets(toilets.map(toilet => ({
+          ...toilet,
+          // Ensure location is properly formatted for the map
+          lat: toilet.location?.latitude || toilet.latitude,
+          lng: toilet.location?.longitude || toilet.longitude
+        })));
       } catch (error) {
-        console.error('Error initializing:', error);
-        if (mounted) {
-          setLocationError('Unable to get your location. Please enable location services and refresh the page.');
-        }
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        console.error('Location error:', error);
+        setLocationError(error.message);
       }
     };
 
-    // Add event listener for when the page becomes visible
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        initializeLocation();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    initializeLocation();
-
-    return () => {
-      mounted = false;
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+    fetchLocation();
   }, []);
 
   const handleLocationAdded = async () => {
@@ -171,32 +186,39 @@ const HomeScreen = ({ isLoaded }) => {
   // Add a refresh location button handler
   const handleRefreshLocation = async () => {
     try {
-      const location = await getCurrentLocation();
-      console.log('Got fresh location:', location);
-      
-      const userLoc = {
-        lat: Number(location.latitude),
-        lng: Number(location.longitude)
-      };
-      console.log('Formatted user location:', userLoc);
-      
-      setUserLocation(userLoc);
-      localStorage.setItem('userLocation', JSON.stringify(userLoc));
-      
-      const toilets = await getNearbyToilets(
-        userLoc.lat,
-        userLoc.lng
-      );
-      setNearbyToilets(toilets);
       setLocationError(null);
+      const position = await getCurrentLocation();
+      
+      // Format the location properly
+      setUserLocation({
+        lat: Number(position.latitude),
+        lng: Number(position.longitude)
+      });
+      
+      const toilets = await getNearbyToilets(position.latitude, position.longitude);
+      setNearbyToilets(toilets.map(toilet => ({
+        ...toilet,
+        lat: toilet.location?.latitude || toilet.latitude,
+        lng: toilet.location?.longitude || toilet.longitude
+      })));
     } catch (error) {
-      console.error('Error refreshing location:', error);
-      setLocationError('Unable to refresh your location. Please try again.');
+      console.error('Location refresh error:', error);
+      setLocationError(error.message);
     }
   };
 
   const handleToggleTheme = () => {
     setIsDarkMode(!isDarkMode);
+  };
+
+  const handleLocationSelect = (location) => {
+    setSelectedLocation(location);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedLocation(null);
   };
 
   return (
@@ -221,7 +243,7 @@ const HomeScreen = ({ isLoaded }) => {
             <Map
               locations={nearbyToilets}
               userLocation={userLocation}
-              onMarkerClick={setSelectedLocation}
+              onMarkerClick={handleLocationSelect}
               selectedLocation={selectedLocation}
               isLoaded={isLoaded}
             />
@@ -231,28 +253,51 @@ const HomeScreen = ({ isLoaded }) => {
         </MapContainer>
 
         <Grid>
-          <LocationList
-            locations={nearbyToilets}
-            onLocationSelect={setSelectedLocation}
-            selectedLocation={selectedLocation}
-          />
-          <div>
-            {selectedLocation ? (
-              <LocationDetails 
-                location={selectedLocation} 
-                onBack={() => setSelectedLocation(null)}
-              />
-            ) : (
-              userLocation && isLoaded && (
-                <AddLocation
-                  userLocation={userLocation}
-                  onLocationAdded={handleLocationAdded}
-                  isLoaded={isLoaded}
-                />
-              )
-            )}
-          </div>
+          <LocationSection>
+            <LocationList
+              locations={nearbyToilets}
+              onLocationSelect={handleLocationSelect}
+              selectedLocation={selectedLocation}
+            />
+          </LocationSection>
         </Grid>
+
+        <AddButton 
+          onClick={() => setIsAddLocationModalOpen(true)}
+          aria-label="Add new location"
+        >
+          +
+        </AddButton>
+
+        <Modal 
+          isOpen={isAddLocationModalOpen} 
+          onClose={() => setIsAddLocationModalOpen(false)}
+        >
+          {userLocation && isLoaded && (
+            <AddLocation
+              userLocation={userLocation}
+              onLocationAdded={() => {
+                handleLocationAdded();
+                setIsAddLocationModalOpen(false);
+              }}
+              isLoaded={isLoaded}
+              onClose={() => setIsAddLocationModalOpen(false)}
+            />
+          )}
+        </Modal>
+
+        <Modal 
+          isOpen={isDetailsModalOpen} 
+          onClose={handleCloseDetailsModal}
+        >
+          {selectedLocation && (
+            <LocationDetails 
+              location={selectedLocation} 
+              onBack={handleCloseDetailsModal}
+              isLoaded={isLoaded}
+            />
+          )}
+        </Modal>
       </Container>
     </ThemeProvider>
   );

@@ -2,112 +2,84 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import RatingDisplay from './RatingDisplay';
 
-const Form = styled.form`
-  margin-top: ${props => props.theme.spacing.md};
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  padding: ${props => props.theme.spacing.md};
-  margin-bottom: ${props => props.theme.spacing.md};
+  padding: 12px 16px;
   border: 1px solid ${props => props.theme.colors.gray[300]};
-  border-radius: ${props => props.theme.borderRadius.sm};
-  font-size: ${props => props.theme.typography.body.fontSize};
+  border-radius: 10px;
+  font-size: 17px;
+  line-height: 1.4;
   min-height: 100px;
-  resize: vertical;
-  
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.colors.primary};
+  background: ${props => props.theme.colors.background};
+  color: ${props => props.theme.colors.text.primary};
+  -webkit-appearance: none;
+  resize: none;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: ${props => props.theme.colors.text.secondary};
   }
 `;
 
-const Select = styled.select`
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 12px;
   width: 100%;
-  padding: ${props => props.theme.spacing.md};
-  margin-bottom: ${props => props.theme.spacing.md};
-  border: 1px solid ${props => props.theme.colors.gray[300]};
-  border-radius: ${props => props.theme.borderRadius.sm};
-  font-size: ${props => props.theme.typography.body.fontSize};
-  
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.colors.primary};
-  }
 `;
 
 const Button = styled.button`
-  width: 100%;
-  padding: ${props => props.theme.spacing.md};
-  background: ${props => props.theme.colors.primary};
-  color: white;
+  flex: 1;
+  min-height: 44px;
+  padding: 12px;
   border: none;
-  border-radius: ${props => props.theme.borderRadius.sm};
-  font-size: ${props => props.theme.typography.body.fontSize};
+  border-radius: 10px;
+  font-size: 17px;
+  font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s ease;
-  
-  &:hover {
-    opacity: 0.9;
-  }
+  background: ${props => props.primary ? props.theme.colors.primary : props.theme.colors.background};
+  color: ${props => props.primary ? 'white' : props.theme.colors.text.primary};
+  border: ${props => props.primary ? 'none' : `1px solid ${props.theme.colors.gray[300]}`};
 
-  &:disabled {
-    background: ${props => props.theme.colors.gray[400]};
-    cursor: not-allowed;
+  &:active {
+    opacity: 0.9;
   }
 `;
 
 const AddReview = ({ onSubmit, onCancel }) => {
   const [rating, setRating] = useState(3);
   const [comment, setComment] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      await onSubmit({ rating: Number(rating), comment });
-      setRating(3);
-      setComment('');
-    } catch (error) {
-      console.error('Error submitting review:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    onSubmit({ rating, comment });
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Container>
       <RatingDisplay 
-        rating={rating} 
+        rating={rating}
         interactive={true}
         onRatingSelect={setRating}
       />
-      
       <TextArea
-        placeholder="Write your review here..."
+        placeholder="Add your comment..."
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         required
       />
-      
-      <Button type="submit" disabled={isSubmitting || !comment.trim()}>
-        {isSubmitting ? 'Submitting...' : 'Submit Review'}
-      </Button>
-      
-      <Button 
-        type="button" 
-        onClick={onCancel}
-        style={{ 
-          background: 'transparent',
-          color: 'inherit',
-          marginTop: '8px'
-        }}
-      >
-        Cancel
-      </Button>
-    </Form>
+      <ButtonGroup>
+        <Button type="button" onClick={onCancel}>Cancel</Button>
+        <Button type="submit" primary onClick={handleSubmit}>Submit</Button>
+      </ButtonGroup>
+    </Container>
   );
 };
 

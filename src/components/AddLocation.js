@@ -1,129 +1,153 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { addDoc, collection } from 'firebase/firestore';
-import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 import { db } from '../firebase';
 import { generateToiletName } from '../utils/nameGenerator';
 import RatingDisplay from './RatingDisplay';
 
 const Form = styled.form`
+  display: flex;
+  flex-direction: column;
   background: ${props => props.theme.colors.surface};
-  padding: ${props => props.theme.spacing.lg};
-  border-radius: ${props => props.theme.borderRadius.md};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  color: ${props => props.theme.colors.text.primary};
-`;
-
-const Title = styled.h3`
-  color: ${props => props.theme.colors.text.primary};
-  margin: 0 0 ${props => props.theme.spacing.md} 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-`;
-
-const Description = styled.p`
-  color: ${props => props.theme.colors.text.secondary};
-  margin: ${props => props.theme.spacing.xs} 0;
-  font-size: 1rem;
-`;
-
-const Button = styled.button`
-  width: 100%;
-  padding: ${props => props.theme.spacing.md};
-  background: ${props => props.theme.colors.primary};
-  color: white;
-  border: none;
-  border-radius: ${props => props.theme.borderRadius.sm};
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
+  height: 100%;
   
-  &:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: none;
-  }
-
-  &:disabled {
-    background: ${props => props.theme.colors.gray[400]};
-    cursor: not-allowed;
-    opacity: 0.7;
-    transform: none;
-    box-shadow: none;
+  @media (max-width: 768px) {
+    /* Full height on mobile */
+    min-height: 100vh;
   }
 `;
 
-const RatingContainer = styled.div`
-  margin: ${props => props.theme.spacing.md} 0;
-  padding: ${props => props.theme.spacing.sm};
+const Header = styled.div`
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: ${props => props.theme.colors.surface};
+  padding: 12px 16px; /* iOS standard header padding */
+  border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px; /* Apple minimum touch target */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+`;
+
+const NavButton = styled.button`
+  border: none;
+  background: none;
+  color: ${props => props.theme.colors.primary};
+  font-size: 17px; /* iOS standard font size */
+  font-weight: 400;
+  padding: 12px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+`;
+
+const Title = styled.h2`
+  font-size: 17px; /* iOS standard font size */
+  font-weight: 600;
+  margin: 0;
+  color: ${props => props.theme.colors.text.primary};
+  text-align: center;
+  flex: 1;
+`;
+
+const Content = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const MapSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 100%;
+`;
+
+const MapPickerContainer = styled.div`
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  width: 100%;
+`;
+
+const LocationButton = styled.button`
+  width: 100%;
+  min-height: 44px;
+  padding: 12px 16px;
   background: ${props => props.theme.colors.background};
-  border-radius: ${props => props.theme.borderRadius.sm};
-`;
-
-const ErrorMessage = styled.div`
-  color: ${props => props.theme.colors.error};
-  background-color: ${props => `${props.theme.colors.error}15`};
-  padding: ${props => props.theme.spacing.sm};
-  margin-bottom: ${props => props.theme.spacing.md};
-  border-radius: ${props => props.theme.borderRadius.sm};
-  font-size: 0.875rem;
+  border: 1px solid ${props => props.theme.colors.gray[300]};
+  border-radius: 10px;
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: ${props => props.theme.colors.primary};
+  box-sizing: border-box;
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  padding: ${props => props.theme.spacing.md};
-  margin: ${props => props.theme.spacing.md} 0;
+  padding: 12px 16px;
   border: 1px solid ${props => props.theme.colors.gray[300]};
-  border-radius: ${props => props.theme.borderRadius.sm};
-  font-size: 1rem;
+  border-radius: 10px;
+  font-size: 17px;
+  line-height: 1.4;
   min-height: 100px;
-  resize: vertical;
   background: ${props => props.theme.colors.background};
   color: ${props => props.theme.colors.text.primary};
-  
-  &:focus {
-    outline: none;
-    border-color: ${props => props.theme.colors.primary};
-  }
+  -webkit-appearance: none;
+  resize: none;
+  box-sizing: border-box;
 
   &::placeholder {
     color: ${props => props.theme.colors.text.secondary};
   }
 `;
 
-const MapPickerContainer = styled.div`
-  margin: ${props => props.theme.spacing.md} 0;
-  height: 300px;
-  border-radius: ${props => props.theme.borderRadius.sm};
-  overflow: hidden;
-`;
-
-const LocationButton = styled.button`
-  padding: ${props => props.theme.spacing.sm} ${props => props.theme.spacing.md};
+const SubmitButton = styled.button`
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  min-height: 44px; /* Apple minimum touch target */
+  padding: 12px 16px;
   background: ${props => props.theme.colors.primary};
   color: white;
   border: none;
-  border-radius: ${props => props.theme.borderRadius.sm};
-  font-size: 0.875rem;
-  cursor: pointer;
-  margin-bottom: ${props => props.theme.spacing.md};
-  display: flex;
-  align-items: center;
-  gap: ${props => props.theme.spacing.sm};
+  font-size: 17px; /* iOS standard font size */
+  font-weight: 600;
+  margin-top: auto;
   
-  &:hover {
-    opacity: 0.9;
+  @media (max-width: 768px) {
+    border-radius: 0;
   }
+`;
 
-  svg {
-    width: 16px;
-    height: 16px;
-  }
+const ErrorMessage = styled.div`
+  color: ${props => props.theme.colors.error};
+  background-color: ${props => `${props.theme.colors.error}15`};
+  padding: ${props => props.theme.spacing.sm};
+  border-radius: ${props => props.theme.borderRadius.sm};
+  font-size: ${props => props.theme.typography.caption.fontSize};
+  text-align: center;
+  margin: 0;
 `;
 
 const LoadingMessage = styled.div`
@@ -134,7 +158,14 @@ const LoadingMessage = styled.div`
   color: ${props => props.theme.colors.text.secondary};
 `;
 
-const AddLocation = ({ userLocation, onLocationAdded, isLoaded }) => {
+const RatingContainer = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 12px 0;
+`;
+
+const AddLocation = ({ userLocation, onLocationAdded, isLoaded, onClose }) => {
   const [rating, setRating] = useState(3);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -142,6 +173,8 @@ const AddLocation = ({ userLocation, onLocationAdded, isLoaded }) => {
   const [generatedName, setGeneratedName] = useState('');
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [mapCenter, setMapCenter] = useState(userLocation || { lat: 40.7128, lng: -74.0060 });
+  const [currentMarker, setCurrentMarker] = useState(null);
+  const [map, setMap] = useState(null);
 
   useEffect(() => {
     setGeneratedName(generateToiletName());
@@ -150,12 +183,48 @@ const AddLocation = ({ userLocation, onLocationAdded, isLoaded }) => {
     }
   }, [userLocation]);
 
-  const handleMapClick = (e) => {
-    const newLocation = {
-      lat: e.latLng.lat(),
-      lng: e.latLng.lng()
-    };
-    setSelectedLocation(newLocation);
+  const onLoad = map => {
+    setMap(map);
+  };
+
+  const onUnmount = React.useCallback(() => {
+    setMap(null);
+  }, []);
+
+  const createMarkerContent = () => {
+    const pin = document.createElement('div');
+    pin.className = 'custom-marker';
+    pin.style.backgroundColor = '#4CAF50';
+    pin.style.borderRadius = '50%';
+    pin.style.padding = '8px';
+    pin.style.border = '2px solid white';
+    pin.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+    return pin;
+  };
+
+  useEffect(() => {
+    if (map && selectedLocation && window.google?.maps?.marker?.AdvancedMarkerElement) {
+      // Clear existing marker
+      if (currentMarker) {
+        currentMarker.map = null;
+      }
+
+      // Create new marker
+      const marker = new window.google.maps.marker.AdvancedMarkerElement({
+        position: selectedLocation,
+        map: map,
+        title: 'Selected Location',
+        content: createMarkerContent()
+      });
+
+      setCurrentMarker(marker);
+    }
+  }, [map, selectedLocation]);
+
+  const handleMapClick = (event) => {
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+    setSelectedLocation({ lat, lng });
   };
 
   const handleUseCurrentLocation = () => {
@@ -210,61 +279,62 @@ const AddLocation = ({ userLocation, onLocationAdded, isLoaded }) => {
 
   return (
     <Form onSubmit={handleSubmit}>
-      <Title>Add New Location</Title>
-      <Description>{generatedName}</Description>
+      <Header>
+        <NavButton type="button" onClick={onClose}>Cancel</NavButton>
+        <Title>Add Location</Title>
+        <NavButton type="submit" disabled={isSubmitting || !selectedLocation}>
+          {isSubmitting ? 'Adding...' : 'Add'}
+        </NavButton>
+      </Header>
       
-      <LocationButton type="button" onClick={handleUseCurrentLocation}>
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
-        </svg>
-        Use Current Location
-      </LocationButton>
-
-      <MapPickerContainer>
-        {!isLoaded ? (
-          <LoadingMessage>Loading map...</LoadingMessage>
-        ) : (
-          <GoogleMap
-            mapContainerStyle={{ width: '100%', height: '100%' }}
-            center={mapCenter}
-            zoom={14}
-            onClick={handleMapClick}
-            options={{
-              streetViewControl: false,
-              mapTypeControl: false,
-              fullscreenControl: false
-            }}
-          >
-            {selectedLocation && (
-              <Marker
-                position={selectedLocation}
-                animation={window.google.maps.Animation.DROP}
+      <Content>
+        <MapSection>
+          <LocationButton type="button" onClick={handleUseCurrentLocation}>
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"/>
+            </svg>
+            Use Current Location
+          </LocationButton>
+          
+          <MapPickerContainer>
+            {!isLoaded ? (
+              <LoadingMessage>Loading map...</LoadingMessage>
+            ) : (
+              <GoogleMap
+                mapContainerStyle={{ width: '100%', height: '100%' }}
+                center={mapCenter}
+                zoom={14}
+                onClick={handleMapClick}
+                options={{
+                  streetViewControl: false,
+                  mapTypeControl: false,
+                  fullscreenControl: false,
+                  mapId: process.env.REACT_APP_GOOGLE_MAPS_ID
+                }}
+                onLoad={onLoad}
+                onUnmount={onUnmount}
               />
             )}
-          </GoogleMap>
-        )}
-      </MapPickerContainer>
+          </MapPickerContainer>
+        </MapSection>
 
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-      
-      <RatingContainer>
-        <RatingDisplay 
-          rating={rating}
-          interactive={true}
-          onRatingSelect={setRating}
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        
+        <RatingContainer>
+          <RatingDisplay 
+            rating={rating}
+            interactive={true}
+            onRatingSelect={setRating}
+          />
+        </RatingContainer>
+        
+        <TextArea
+          placeholder="Add a comment about this location..."
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          required
         />
-      </RatingContainer>
-      
-      <TextArea
-        placeholder="Add a comment about this location..."
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-        required
-      />
-      
-      <Button type="submit" disabled={isSubmitting || !selectedLocation}>
-        {isSubmitting ? 'Adding...' : 'Add Location'}
-      </Button>
+      </Content>
     </Form>
   );
 };
