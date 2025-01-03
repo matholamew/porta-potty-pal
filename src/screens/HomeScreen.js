@@ -4,6 +4,7 @@ import Map from '../components/Map';
 import LocationList from '../components/LocationList';
 import LocationDetails from '../components/LocationDetails';
 import AddLocation from '../components/AddLocation';
+import AboutModal from '../components/AboutModal';
 import { getCurrentLocation } from '../utils/locationServices';
 import { getNearbyToilets } from '../utils/database';
 import Menu from '../components/Menu';
@@ -172,6 +173,7 @@ const HomeScreen = ({ isLoaded }) => {
   });
   const [isAddLocationModalOpen, setIsAddLocationModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -291,6 +293,7 @@ const HomeScreen = ({ isLoaded }) => {
               onUpdateLocation={handleRefreshLocation}
               onToggleTheme={handleToggleTheme}
               isDarkMode={isDarkMode}
+              onAboutClick={() => setIsAboutModalOpen(true)}
             />
           </HeaderContent>
           {locationError && (
@@ -363,6 +366,11 @@ const HomeScreen = ({ isLoaded }) => {
             />
           )}
         </Modal>
+
+        <AboutModal 
+          isOpen={isAboutModalOpen}
+          onClose={() => setIsAboutModalOpen(false)}
+        />
       </Container>
     </ThemeProvider>
   );

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import AboutModal from './AboutModal';
 
 const MenuContainer = styled.div`
   position: relative;
@@ -101,9 +100,8 @@ const MenuItem = styled.button`
   }
 `;
 
-const Menu = ({ onUpdateLocation, onToggleTheme, isDarkMode }) => {
+const Menu = ({ onUpdateLocation, onToggleTheme, isDarkMode, onAboutClick }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showAbout, setShowAbout] = useState(false);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -148,7 +146,7 @@ const Menu = ({ onUpdateLocation, onToggleTheme, isDarkMode }) => {
             </MenuItem>
 
             <MenuItem onClick={() => {
-              setShowAbout(true);
+              onAboutClick();
               handleClose();
             }}>
               <svg viewBox="0 0 24 24" fill="currentColor">
@@ -159,11 +157,6 @@ const Menu = ({ onUpdateLocation, onToggleTheme, isDarkMode }) => {
           </MenuDropdown>
         </>
       )}
-
-      <AboutModal 
-        isOpen={showAbout} 
-        onClose={() => setShowAbout(false)} 
-      />
     </MenuContainer>
   );
 };

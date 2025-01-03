@@ -7,6 +7,11 @@ const Container = styled.div`
   flex-direction: column;
   background: ${props => props.theme.colors.surface};
   height: 100%;
+  
+  @media (max-width: 768px) {
+    /* Full height on mobile */
+    min-height: 100vh;
+  }
 `;
 
 const Header = styled.div`
@@ -14,7 +19,7 @@ const Header = styled.div`
   top: 0;
   z-index: 10;
   background: ${props => props.theme.colors.surface};
-  padding: 12px 16px;
+  padding: 8px 16px;
   border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
   display: flex;
   align-items: center;
@@ -37,10 +42,14 @@ const Content = styled.div`
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
+  max-width: 500px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const Section = styled.section`
@@ -50,15 +59,15 @@ const Section = styled.section`
 `;
 
 const SectionTitle = styled.h3`
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 600;
   margin: 0;
   color: ${props => props.theme.colors.text.primary};
 `;
 
 const Text = styled.p`
-  font-size: 17px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.4;
   margin: 0;
   color: ${props => props.theme.colors.text.primary};
 `;
@@ -68,22 +77,29 @@ const FeatureList = styled.ul`
   padding-left: 20px;
   
   li {
-    font-size: 17px;
-    line-height: 1.5;
+    font-size: 15px;
+    line-height: 1.4;
     margin-bottom: 8px;
     color: ${props => props.theme.colors.text.primary};
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 `;
 
-const CloseButton = styled.button`
+const NavButton = styled.button`
   border: none;
   background: none;
   color: ${props => props.theme.colors.primary};
   font-size: 17px;
-  padding: 12px;
+  padding: 8px 12px;
   min-width: 44px;
   min-height: 44px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const AboutModal = ({ isOpen, onClose }) => {
@@ -91,8 +107,9 @@ const AboutModal = ({ isOpen, onClose }) => {
     <Modal isOpen={isOpen} onClose={onClose}>
       <Container>
         <Header>
+          <NavButton onClick={onClose}>Close</NavButton>
           <Title>About In-a-Pinch</Title>
-          <CloseButton onClick={onClose}>Done</CloseButton>
+          <NavButton style={{ visibility: 'hidden' }}>Close</NavButton>
         </Header>
 
         <Content>
