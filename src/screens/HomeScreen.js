@@ -134,9 +134,40 @@ const HomeScreen = ({ isLoaded }) => {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    // Initialize with system preference
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return true;
+    }
+    return false;
+  });
   const [isAddLocationModalOpen, setIsAddLocationModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleChange = (e) => {
+      setIsDarkMode(e.matches);
+    };
+
+    // Modern browsers
+    if (mediaQuery?.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      // Fallback for older browsers
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (mediaQuery?.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchLocation = async () => {
