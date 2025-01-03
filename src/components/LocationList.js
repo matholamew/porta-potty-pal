@@ -4,24 +4,30 @@ import RatingDisplay from './RatingDisplay';
 
 const ListContainer = styled.div`
   background: ${props => props.theme.colors.surface};
-  border-radius: ${props => props.theme.borderRadius.lg};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   overflow: hidden;
 `;
 
 const ListHeader = styled.div`
-  padding: ${props => props.theme.spacing.md};
+  padding: 16px;
   border-bottom: 1px solid ${props => props.theme.colors.divider};
-  font-size: ${props => props.theme.typography.h2.fontSize};
-  line-height: ${props => props.theme.typography.h2.lineHeight};
-  font-weight: ${props => props.theme.typography.h2.fontWeight};
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+`;
+
+const HeaderTitle = styled.h2`
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
   color: ${props => props.theme.colors.text.primary};
 `;
 
 const ScrollContainer = styled.div`
   max-height: 600px;
   overflow-y: auto;
-  padding: ${props => props.theme.spacing.md};
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 16px;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -37,56 +43,65 @@ const ScrollContainer = styled.div`
   }
 `;
 
-const LocationCard = styled.div`
-  padding: ${props => props.theme.spacing.lg};
-  margin-bottom: ${props => props.theme.spacing.md};
-  border-radius: ${props => props.theme.borderRadius.sm};
+const LocationCard = styled.button`
+  width: 100%;
+  padding: 16px;
+  margin-bottom: 8px;
+  border-radius: 12px;
   background: ${props => props.selected ? props.theme.colors.gray[100] : props.theme.colors.surface};
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid ${props => props.theme.colors.gray[200]};
   cursor: pointer;
   transition: all 0.2s ease;
-  min-height: ${props => props.theme.spacing.xxl};
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    background: ${props => props.theme.colors.gray[100]};
   }
   
   ${props => props.selected && `
     border: 2px solid ${props.theme.colors.primary};
+    background: ${props.theme.colors.gray[50]};
   `}
-`;
 
-const LocationName = styled.h3`
-  font-size: ${props => props.theme.typography.body.fontSize};
-  line-height: ${props => props.theme.typography.body.lineHeight};
-  font-weight: 600;
-  margin: 0 0 ${props => props.theme.spacing.xs} 0;
-  color: ${props => props.theme.colors.text.primary};
-`;
-
-const Rating = styled.div`
-  font-size: 20px;
-  margin: ${props => props.theme.spacing.xs} 0;
-`;
-
-const ReviewCount = styled.p`
-  font-size: ${props => props.theme.typography.caption.fontSize};
-  line-height: ${props => props.theme.typography.caption.lineHeight};
-  color: ${props => props.theme.colors.text.secondary};
-  margin: 0;
+  &:last-child {
+    margin-bottom: 0;
+  }
 `;
 
 const LocationInfo = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: ${props => props.theme.spacing.xs};
+  width: 100%;
+  margin-bottom: 4px;
+`;
+
+const LocationName = styled.span`
+  font-size: 17px;
+  font-weight: 600;
+  color: ${props => props.theme.colors.text.primary};
+  margin-right: 8px;
 `;
 
 const Distance = styled.span`
+  font-size: 15px;
+  color: ${props => props.theme.colors.text.secondary};
+`;
+
+const ReviewCount = styled.span`
   font-size: 13px;
   color: ${props => props.theme.colors.text.secondary};
+  margin-top: 4px;
 `;
 
 const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
@@ -107,7 +122,9 @@ const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
 
   return (
     <ListContainer>
-      <ListHeader>Local Loo-cations</ListHeader>
+      <ListHeader>
+        <HeaderTitle>Local Loo-cations</HeaderTitle>
+      </ListHeader>
       <ScrollContainer>
         {locations.map((location) => (
           <LocationCard
