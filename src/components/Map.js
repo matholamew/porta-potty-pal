@@ -114,14 +114,30 @@ const Map = ({ locations, userLocation, onMarkerClick, selectedLocation }) => {
 
     // Add location markers
     locations.forEach((loc) => {
-      const marker = createMarker(loc);
-      newMarkers.push(marker);
+      // Validate coordinates before creating marker
+      const lat = Number(loc.lat || loc.latitude);
+      const lng = Number(loc.lng || loc.longitude);
+      
+      if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+        const marker = createMarker({
+          ...loc,
+          lat,
+          lng
+        });
+        if (marker) {
+          newMarkers.push(marker);
+        }
+      } else {
+        console.warn('Invalid coordinates for location:', loc);
+      }
     });
 
     // Add user location marker
     if (userLocation) {
       const userMarker = createUserMarker();
-      newMarkers.push(userMarker);
+      if (userMarker) {
+        newMarkers.push(userMarker);
+      }
     }
 
     setMarkers(newMarkers);
@@ -132,11 +148,16 @@ const Map = ({ locations, userLocation, onMarkerClick, selectedLocation }) => {
   const createMarker = (location) => {
     if (!map || !window.google?.maps?.marker?.AdvancedMarkerElement) return;
 
+    const lat = Number(location.lat);
+    const lng = Number(location.lng);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      console.warn('Invalid coordinates for location:', location);
+      return null;
+    }
+
     const marker = new window.google.maps.marker.AdvancedMarkerElement({
-      position: { 
-        lat: Number(location.lat), 
-        lng: Number(location.lng)
-      },
+      position: { lat, lng },
       map: map,
       title: location.name,
       content: createMarkerContent(selectedLocation?.id === location.id)
@@ -149,11 +170,16 @@ const Map = ({ locations, userLocation, onMarkerClick, selectedLocation }) => {
   const createUserMarker = () => {
     if (!map || !userLocation || !window.google?.maps?.marker?.AdvancedMarkerElement) return;
 
+    const lat = Number(userLocation.lat);
+    const lng = Number(userLocation.lng);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      console.warn('Invalid coordinates for user location:', userLocation);
+      return null;
+    }
+
     return new window.google.maps.marker.AdvancedMarkerElement({
-      position: {
-        lat: Number(userLocation.lat),
-        lng: Number(userLocation.lng)
-      },
+      position: { lat, lng },
       map: map,
       title: 'Your Location',
       content: createUserMarkerContent()

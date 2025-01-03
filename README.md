@@ -1,3 +1,4 @@
+
 # Porta Potty Pal 🚽
 
 A modern, user-friendly web application to help people find and review public restrooms near them. Built with React, Firebase, and Google Maps.

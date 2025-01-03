@@ -207,6 +207,9 @@ const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
   };
 
   const formatDistance = (distance) => {
+    if (distance === undefined || distance === null) {
+      return '-- mi';
+    }
     if (distance < 0.1) {
       const feet = Math.round(distance * 5280);
       return `${feet}ft`;
