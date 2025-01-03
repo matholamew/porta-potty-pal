@@ -9,15 +9,17 @@ const ListContainer = styled.div`
 `;
 
 const ListHeader = styled.div`
-  padding: 16px;
+  padding: 8px 16px;
   border-bottom: 1px solid ${props => props.theme.colors.divider};
   min-height: 44px;
   display: flex;
   align-items: center;
+  background: ${props => props.theme.colors.surface};
 `;
 
 const HeaderTitle = styled.h2`
   font-size: 17px;
+  line-height: 22px;
   font-weight: 600;
   margin: 0;
   color: ${props => props.theme.colors.text.primary};

@@ -15,7 +15,7 @@ import Modal from '../components/Modal';
 const Container = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: ${props => props.theme.spacing.xl};
+  padding: 0;
   background-color: ${props => props.theme.colors.background};
 `;
 
@@ -27,7 +27,7 @@ const Header = styled.header`
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   margin-bottom: ${props => props.theme.spacing.md};
-  padding: 8px 16px;
+  padding: 0;
   border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
 `;
 
@@ -37,12 +37,13 @@ const HeaderContent = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 44px; /* Apple minimum touch target */
+  min-height: 44px;
+  padding: 0 16px;
 `;
 
 const Title = styled.h1`
-  font-size: 17px; /* iOS standard font size */
-  line-height: 20px;
+  font-size: 17px;
+  line-height: 22px;
   font-weight: 600;
   color: ${props => props.theme.colors.text.primary};
   margin: 0;
