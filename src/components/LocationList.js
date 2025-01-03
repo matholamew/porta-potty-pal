@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import RatingDisplay from './RatingDisplay';
 
@@ -8,13 +8,35 @@ const ListContainer = styled.div`
   overflow: hidden;
 `;
 
-const ListHeader = styled.div`
+const ListHeader = styled.button`
+  width: 100%;
   padding: 8px 16px;
+  border: none;
+  background: ${props => props.theme.colors.surface};
   border-bottom: 1px solid ${props => props.theme.colors.divider};
   min-height: 44px;
   display: flex;
   align-items: center;
-  background: ${props => props.theme.colors.surface};
+  justify-content: space-between;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:focus-visible {
+    background: ${props => props.theme.colors.gray[50]};
+  }
+`;
+
+const HeaderContent = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const HeaderTitle = styled.h2`
@@ -25,11 +47,20 @@ const HeaderTitle = styled.h2`
   color: ${props => props.theme.colors.text.primary};
 `;
 
+const ChevronIcon = styled.svg`
+  width: 20px;
+  height: 20px;
+  transform: ${props => props.isOpen ? 'rotate(180deg)' : 'rotate(0deg)'};
+  transition: transform 0.3s ease;
+  color: ${props => props.theme.colors.text.secondary};
+`;
+
 const ScrollContainer = styled.div`
   max-height: 600px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 8px 16px;
+  transition: all 0.3s ease;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -45,9 +76,15 @@ const ScrollContainer = styled.div`
   }
 `;
 
+const LocationCount = styled.span`
+  font-size: 15px;
+  color: ${props => props.theme.colors.text.secondary};
+  margin-left: 8px;
+`;
+
 const LocationCard = styled.button`
   width: 100%;
-  padding: 16px;
+  padding: ${props => props.isExpanded ? '12px 16px' : '8px 16px'};
   margin-bottom: 8px;
   border-radius: 12px;
   background: ${props => props.selected ? props.theme.colors.gray[100] : props.theme.colors.surface};
@@ -56,9 +93,17 @@ const LocationCard = styled.button`
   transition: all 0.2s ease;
   min-height: 44px;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  
+  &:focus {
+    outline: none;
+  }
   
   &:hover {
     transform: translateY(-1px);
@@ -80,19 +125,43 @@ const LocationCard = styled.button`
   }
 `;
 
-const LocationInfo = styled.div`
+const CompactView = styled.div`
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   width: 100%;
-  margin-bottom: 4px;
+  gap: 12px;
+`;
+
+const ExpandedView = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 8px;
+`;
+
+const NameAndRating = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 `;
 
 const LocationName = styled.span`
   font-size: 17px;
   font-weight: 600;
   color: ${props => props.theme.colors.text.primary};
-  margin-right: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const LocationInfo = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 4px;
 `;
 
 const Distance = styled.span`
@@ -107,6 +176,8 @@ const ReviewCount = styled.span`
 `;
 
 const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
+  const [isOpen, setIsOpen] = useState(true);
+
   const getAverageRating = (location) => {
     if (!location.reviews || location.reviews.length === 0) {
       return location.rating || 0;
@@ -124,8 +195,20 @@ const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
 
   return (
     <ListContainer>
-      <ListHeader>
-        <HeaderTitle>Local Loo-cations</HeaderTitle>
+      <ListHeader onClick={() => setIsOpen(!isOpen)} type="button">
+        <HeaderContent>
+          <HeaderTitle>Local Loo-cations</HeaderTitle>
+          <LocationCount>({locations.length})</LocationCount>
+        </HeaderContent>
+        <ChevronIcon 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth="2"
+          isOpen={isOpen}
+        >
+          <path d="M19 9l-7 7-7-7" />
+        </ChevronIcon>
       </ListHeader>
       <ScrollContainer>
         {locations.map((location) => (
@@ -133,16 +216,28 @@ const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
             key={location.id}
             onClick={() => onLocationSelect(location)}
             selected={selectedLocation?.id === location.id}
+            isExpanded={isOpen}
           >
-            <LocationInfo>
-              <LocationName>{location.name}</LocationName>
-              <Distance>{formatDistance(location.distance)}</Distance>
-            </LocationInfo>
-            <RatingDisplay rating={getAverageRating(location)} size="18px" />
-            {location.reviews && location.reviews.length > 0 && (
-              <ReviewCount>
-                {location.reviews.length} {location.reviews.length === 1 ? 'log' : 'logs'}
-              </ReviewCount>
+            {isOpen ? (
+              <ExpandedView>
+                <LocationInfo>
+                  <LocationName>{location.name}</LocationName>
+                  <Distance>{formatDistance(location.distance)}</Distance>
+                </LocationInfo>
+                <RatingDisplay rating={getAverageRating(location)} size="18px" />
+                {location.reviews && location.reviews.length > 0 && (
+                  <ReviewCount>
+                    {location.reviews.length} {location.reviews.length === 1 ? 'log' : 'logs'}
+                  </ReviewCount>
+                )}
+              </ExpandedView>
+            ) : (
+              <CompactView>
+                <NameAndRating>
+                  <LocationName>{location.name}</LocationName>
+                  <RatingDisplay rating={getAverageRating(location)} size="16px" />
+                </NameAndRating>
+              </CompactView>
             )}
           </LocationCard>
         ))}

@@ -17,6 +17,9 @@ const Container = styled.div`
   margin: 0 auto;
   padding: 0;
   background-color: ${props => props.theme.colors.background};
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Header = styled.header`
@@ -29,6 +32,7 @@ const Header = styled.header`
   margin-bottom: ${props => props.theme.spacing.md};
   padding: 0;
   border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
+  width: 100%;
 `;
 
 const HeaderContent = styled.div`
@@ -57,6 +61,8 @@ const Grid = styled.div`
   flex-direction: column;
   gap: ${props => props.theme.spacing.xl};
   margin-top: ${props => props.theme.spacing.xl};
+  flex: 1;
+  padding: 0 16px 80px;
 `;
 
 const LocationSection = styled.div`
