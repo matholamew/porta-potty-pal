@@ -11,6 +11,8 @@ import Menu from '../components/Menu';
 import { ThemeProvider } from 'styled-components';
 import { lightTheme, darkTheme } from '../theme';
 import Modal from '../components/Modal';
+import { onSnapshot, collection } from 'firebase/firestore';
+import { db } from '../firebase';
 
 const Container = styled.div`
   max-width: 1200px;
@@ -181,6 +183,7 @@ const HomeScreen = ({ isLoaded }) => {
   const [isAddLocationModalOpen, setIsAddLocationModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -289,6 +292,56 @@ const HomeScreen = ({ isLoaded }) => {
     setIsDetailsModalOpen(false);
     setSelectedLocation(null);
   };
+
+  useEffect(() => {
+    let unsubscribe;
+    let retryCount = 0;
+    const maxRetries = 5;
+    const retryDelay = 1000; // 1 second
+
+    const setupFirestoreListener = () => {
+      try {
+        const toiletLocationsRef = collection(db, 'toiletLocations');
+        unsubscribe = onSnapshot(
+          toiletLocationsRef,
+          (snapshot) => {
+            const locations = [];
+            snapshot.forEach((doc) => {
+              locations.push({ id: doc.id, ...doc.data() });
+            });
+            setNearbyToilets(locations);
+            setIsReconnecting(false);
+            retryCount = 0; // Reset retry count on successful connection
+          },
+          (error) => {
+            console.error('Firestore error:', error);
+            setIsReconnecting(true);
+            
+            // Retry connection if it's a network error
+            if (error.code === 'unavailable' && retryCount < maxRetries) {
+              retryCount++;
+              setTimeout(() => {
+                if (unsubscribe) {
+                  unsubscribe();
+                }
+                setupFirestoreListener();
+              }, retryDelay * retryCount);
+            }
+          }
+        );
+      } catch (error) {
+        console.error('Error setting up Firestore listener:', error);
+      }
+    };
+
+    setupFirestoreListener();
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
 
   return (
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
