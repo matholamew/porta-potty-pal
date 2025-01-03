@@ -19,15 +19,35 @@ const Container = styled.div`
 `;
 
 const Header = styled.header`
-  margin-bottom: ${props => props.theme.spacing.xl};
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: ${props => props.theme.colors.background};
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  margin-bottom: ${props => props.theme.spacing.md};
+  padding: 8px 16px;
+  border-bottom: 1px solid ${props => props.theme.colors.gray[200]};
+`;
+
+const HeaderContent = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 44px; /* Apple minimum touch target */
 `;
 
 const Title = styled.h1`
-  font-size: ${props => props.theme.typography.h1.fontSize};
-  line-height: ${props => props.theme.typography.h1.lineHeight};
-  font-weight: ${props => props.theme.typography.h1.fontWeight};
+  font-size: 17px; /* iOS standard font size */
+  line-height: 20px;
+  font-weight: 600;
   color: ${props => props.theme.colors.text.primary};
-  margin: 0 0 ${props => props.theme.spacing.sm} 0;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  text-align: center;
 `;
 
 const Grid = styled.div`
@@ -51,15 +71,24 @@ const DetailsSection = styled.div`
 `;
 
 const ErrorMessage = styled.div`
-  padding: ${props => props.theme.spacing.md};
-  background-color: ${props => props.theme.colors.error}15;
+  margin: 4px 16px 0;
+  padding: 8px 12px;
+  background-color: ${props => `${props.theme.colors.error}10`};
   color: ${props => props.theme.colors.error};
-  border-radius: ${props => props.theme.borderRadius.sm};
-  margin: ${props => props.theme.spacing.md} 0;
-  font-size: ${props => props.theme.typography.body.fontSize};
-  min-height: ${props => props.theme.spacing.xxl};
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  text-align: center;
   display: flex;
   align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 `;
 
 const RefreshButton = styled.button`
@@ -256,16 +285,21 @@ const HomeScreen = ({ isLoaded }) => {
     <ThemeProvider theme={isDarkMode ? darkTheme : lightTheme}>
       <Container>
         <Header>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <HeaderContent>
             <Title>In-a-Pinch</Title>
             <Menu 
               onUpdateLocation={handleRefreshLocation}
               onToggleTheme={handleToggleTheme}
               isDarkMode={isDarkMode}
             />
-          </div>
+          </HeaderContent>
           {locationError && (
-            <ErrorMessage>{locationError}</ErrorMessage>
+            <ErrorMessage>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              {locationError}
+            </ErrorMessage>
           )}
         </Header>
         

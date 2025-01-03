@@ -12,6 +12,8 @@ const Overlay = styled.div`
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 
   @media (max-width: 768px) {
     align-items: flex-end;
@@ -20,21 +22,26 @@ const Overlay = styled.div`
 
 const ModalContainer = styled.div`
   background: ${props => props.theme.colors.surface};
-  width: 90%;
+  width: 100%;
   max-width: 540px;
-  max-height: 90vh;
+  max-height: 85vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: ${props => props.theme.shadows.large};
-  margin: 20px;
-  border-radius: ${props => props.theme.borderRadius.lg};
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  margin: 16px;
+  border-radius: 16px;
+  -webkit-overflow-scrolling: touch;
 
   @media (max-width: 768px) {
     width: 100%;
     max-width: 100%;
     margin: 0;
     max-height: 90vh;
-    border-radius: ${props => props.theme.borderRadius.lg} ${props => props.theme.borderRadius.lg} 0 0;
+    border-radius: 16px 16px 0 0;
+  }
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 `;
 
@@ -44,9 +51,32 @@ const Grabber = styled.div`
   background: ${props => props.theme.colors.gray[300]};
   border-radius: 2.5px;
   margin: 8px auto;
+  display: none;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
 `;
 
 const Modal = ({ isOpen, onClose, children }) => {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') {
+      onClose();
+    }
+  };
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+    
+    document.addEventListener('keydown', handleKeyDown);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
