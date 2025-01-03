@@ -332,14 +332,37 @@ const LocationDetails = ({ location, onBack, isLoaded }) => {
   };
 
   const createMarkerContent = () => {
-    const pin = document.createElement('div');
-    pin.className = 'location-marker';
-    pin.style.backgroundColor = '#4CAF50';
-    pin.style.borderRadius = '50%';
-    pin.style.padding = '8px';
-    pin.style.border = '2px solid white';
-    pin.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-    return pin;
+    const container = document.createElement('div');
+    container.className = 'marker-container';
+    container.style.position = 'relative';
+    container.style.transform = 'translate(-50%, -50%)';
+
+    const marker = document.createElement('div');
+    marker.className = 'custom-marker';
+    marker.style.width = '32px';
+    marker.style.height = '32px';
+    marker.style.backgroundColor = '#4CAF50';
+    marker.style.borderRadius = '50%';
+    marker.style.border = '3px solid white';
+    marker.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+    marker.style.position = 'relative';
+    marker.style.zIndex = '1';
+    marker.style.display = 'flex';
+    marker.style.alignItems = 'center';
+    marker.style.justifyContent = 'center';
+
+    // Add restroom icon
+    const icon = document.createElement('div');
+    icon.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+        <path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/>
+      </svg>
+    `;
+    icon.style.lineHeight = '0';
+
+    marker.appendChild(icon);
+    container.appendChild(marker);
+    return container;
   };
 
   const onLoad = useCallback((map) => {

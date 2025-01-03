@@ -133,6 +133,14 @@ const CompactView = styled.div`
   gap: 12px;
 `;
 
+const NameAndDistance = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-width: 0;
+`;
+
 const ExpandedView = styled.div`
   display: flex;
   flex-direction: column;
@@ -166,13 +174,26 @@ const LocationInfo = styled.div`
 
 const Distance = styled.span`
   font-size: 15px;
-  color: ${props => props.theme.colors.text.secondary};
+  color: inherit;
 `;
 
 const ReviewCount = styled.span`
   font-size: 13px;
   color: ${props => props.theme.colors.text.secondary};
   margin-top: 4px;
+`;
+
+const DistanceContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: ${props => props.theme.colors.primary};
+`;
+
+const ArrowIcon = styled.svg`
+  width: 16px;
+  height: 16px;
+  transform: rotate(-45deg);
 `;
 
 const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
@@ -222,7 +243,12 @@ const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
               <ExpandedView>
                 <LocationInfo>
                   <LocationName>{location.name}</LocationName>
-                  <Distance>{formatDistance(location.distance)}</Distance>
+                  <DistanceContainer>
+                    <ArrowIcon viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M5 17.59L15.59 7H9V5h10v10h-2V8.41L6.41 19 5 17.59z" />
+                    </ArrowIcon>
+                    <Distance>{formatDistance(location.distance)}</Distance>
+                  </DistanceContainer>
                 </LocationInfo>
                 <RatingDisplay rating={getAverageRating(location)} size="18px" />
                 {location.reviews && location.reviews.length > 0 && (
@@ -233,10 +259,15 @@ const LocationList = ({ locations, onLocationSelect, selectedLocation }) => {
               </ExpandedView>
             ) : (
               <CompactView>
-                <NameAndRating>
+                <NameAndDistance>
                   <LocationName>{location.name}</LocationName>
-                  <RatingDisplay rating={getAverageRating(location)} size="16px" />
-                </NameAndRating>
+                  <DistanceContainer>
+                    <ArrowIcon viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M5 17.59L15.59 7H9V5h10v10h-2V8.41L6.41 19 5 17.59z" />
+                    </ArrowIcon>
+                    <Distance>{formatDistance(location.distance)}</Distance>
+                  </DistanceContainer>
+                </NameAndDistance>
               </CompactView>
             )}
           </LocationCard>

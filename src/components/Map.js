@@ -14,25 +14,89 @@ const Map = ({ locations, userLocation, onMarkerClick, selectedLocation }) => {
   const [markers, setMarkers] = useState([]);
 
   const createMarkerContent = (isSelected) => {
-    const pin = document.createElement('div');
-    pin.className = 'custom-marker';
-    pin.style.backgroundColor = isSelected ? '#2196F3' : '#4CAF50';
-    pin.style.borderRadius = '50%';
-    pin.style.padding = '8px';
-    pin.style.border = '2px solid white';
-    pin.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-    return pin;
+    const container = document.createElement('div');
+    container.className = 'marker-container';
+    container.style.position = 'relative';
+    container.style.transform = 'translate(-50%, -50%)';
+
+    const marker = document.createElement('div');
+    marker.className = 'custom-marker';
+    marker.style.width = '32px';
+    marker.style.height = '32px';
+    marker.style.backgroundColor = isSelected ? '#2196F3' : '#4CAF50';
+    marker.style.borderRadius = '50%';
+    marker.style.border = '3px solid white';
+    marker.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+    marker.style.position = 'relative';
+    marker.style.zIndex = '1';
+    marker.style.display = 'flex';
+    marker.style.alignItems = 'center';
+    marker.style.justifyContent = 'center';
+
+    // Add restroom icon
+    const icon = document.createElement('div');
+    icon.innerHTML = `
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+        <path d="M12 2c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2zm9 7h-6v13h-2v-6h-2v6H9V9H3V7h18v2z"/>
+      </svg>
+    `;
+    icon.style.lineHeight = '0';
+
+    marker.appendChild(icon);
+    container.appendChild(marker);
+    return container;
   };
 
   const createUserMarkerContent = () => {
-    const pin = document.createElement('div');
-    pin.className = 'user-marker';
-    pin.style.backgroundColor = '#1976D2';
-    pin.style.borderRadius = '50%';
-    pin.style.padding = '6px';
-    pin.style.border = '2px solid white';
-    pin.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
-    return pin;
+    const container = document.createElement('div');
+    container.className = 'user-marker-container';
+    container.style.position = 'relative';
+    container.style.transform = 'translate(-50%, -50%)';
+
+    const ring = document.createElement('div');
+    ring.style.width = '32px';
+    ring.style.height = '32px';
+    ring.style.borderRadius = '50%';
+    ring.style.backgroundColor = 'rgba(25, 118, 210, 0.2)';
+    ring.style.border = '2px solid #1976D2';
+    ring.style.boxShadow = '0 0 0 2px rgba(25, 118, 210, 0.3)';
+    ring.style.animation = 'pulse 2s infinite';
+
+    const dot = document.createElement('div');
+    dot.style.width = '12px';
+    dot.style.height = '12px';
+    dot.style.backgroundColor = '#1976D2';
+    dot.style.borderRadius = '50%';
+    dot.style.border = '2px solid white';
+    dot.style.position = 'absolute';
+    dot.style.top = '50%';
+    dot.style.left = '50%';
+    dot.style.transform = 'translate(-50%, -50%)';
+    dot.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+
+    // Add pulse animation style
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes pulse {
+        0% {
+          transform: scale(0.95);
+          box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.4);
+        }
+        70% {
+          transform: scale(1);
+          box-shadow: 0 0 0 10px rgba(25, 118, 210, 0);
+        }
+        100% {
+          transform: scale(0.95);
+          box-shadow: 0 0 0 0 rgba(25, 118, 210, 0);
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    container.appendChild(ring);
+    container.appendChild(dot);
+    return container;
   };
 
   // Clean up existing markers
