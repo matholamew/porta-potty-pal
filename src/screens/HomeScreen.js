@@ -64,7 +64,8 @@ const Grid = styled.div`
   gap: ${props => props.theme.spacing.xl};
   margin-top: ${props => props.theme.spacing.xl};
   flex: 1;
-  padding: 0 16px 80px;
+  padding: 0 16px;
+  padding-bottom: calc(80px + 42px);
 `;
 
 const LocationSection = styled.div`
@@ -133,7 +134,7 @@ const MapContainer = styled.div`
 
 const AddButton = styled.button`
   position: fixed;
-  bottom: 24px;
+  bottom: calc(24px + 42px);
   right: 24px;
   width: 56px;
   height: 56px;
@@ -158,12 +159,53 @@ const AddButton = styled.button`
     transform: scale(0.95);
   }
 
-  // Ensure minimum touch target size (44x44 points)
   @media (max-width: 768px) {
     width: 44px;
     height: 44px;
     border-radius: 22px;
     font-size: 20px;
+    bottom: calc(24px + 42px + env(safe-area-inset-bottom));
+  }
+`;
+
+const DisclaimerBanner = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: ${props => props.theme.colors.surface}F0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 12px 16px;
+  border-top: 1px solid ${props => props.theme.colors.gray[200]};
+  font-size: 13px;
+  line-height: 18px;
+  color: ${props => props.theme.colors.text.secondary};
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  z-index: 90;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+  
+  @media (max-width: 768px) {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  }
+`;
+
+const DisclaimerLink = styled.button`
+  background: none;
+  border: none;
+  color: ${props => props.theme.colors.primary};
+  padding: 0;
+  font-size: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  
+  &:focus {
+    outline: none;
   }
 `;
 
@@ -389,6 +431,22 @@ const HomeScreen = ({ isLoaded }) => {
             />
           </LocationSection>
         </Grid>
+
+        <DisclaimerBanner>
+          ⚠️ Respect private property. Do not trespass.{' '}
+          <DisclaimerLink onClick={() => {
+            setIsAboutModalOpen(true);
+            // Small delay to ensure modal is open before scrolling
+            setTimeout(() => {
+              const disclaimer = document.getElementById('disclaimer');
+              if (disclaimer) {
+                disclaimer.scrollIntoView({ behavior: 'smooth' });
+              }
+            }, 100);
+          }}>
+            Read full disclaimer
+          </DisclaimerLink>
+        </DisclaimerBanner>
 
         <AddButton 
           onClick={() => setIsAddLocationModalOpen(true)}

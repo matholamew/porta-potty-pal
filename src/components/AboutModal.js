@@ -102,6 +102,22 @@ const NavButton = styled.button`
   justify-content: center;
 `;
 
+const DisclaimerSection = styled(Section)`
+  background: ${props => props.theme.colors.background};
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid ${props => props.theme.colors.gray[200]};
+`;
+
+const DisclaimerTitle = styled(SectionTitle)`
+  color: ${props => props.theme.colors.error};
+`;
+
+const DisclaimerText = styled(Text)`
+  color: ${props => props.theme.colors.text.primary};
+  font-weight: 500;
+`;
+
 const AboutModal = ({ isOpen, onClose }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -113,6 +129,15 @@ const AboutModal = ({ isOpen, onClose }) => {
         </Header>
 
         <Content>
+          <DisclaimerSection id="disclaimer">
+            <DisclaimerTitle>⚠️ Important Disclaimer</DisclaimerTitle>
+            <DisclaimerText>
+              Please be aware that some locations may be on private property. Always respect property rights and do not trespass. 
+              Use good judgment and only access facilities that are clearly public or where you have explicit permission. 
+              The app creators are not responsible for any issues arising from trespassing or unauthorized access.
+            </DisclaimerText>
+          </DisclaimerSection>
+
           <Section>
             <SectionTitle>Our Mission</SectionTitle>
             <Text>
